@@ -1,0 +1,14 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.py[cod]
+*.tmp
+dev-config/
+# Raw probe captures; commit only the reviewed copy under tests/fixtures/.
+fc660_capture_*.json
+# The vendor's manual is theirs: transcribe it (docs/register_map.md), never commit it.
+*.pdf
+*.HEIC
+*.heic
+.idea/

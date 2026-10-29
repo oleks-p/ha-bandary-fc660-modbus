@@ -1,0 +1,31 @@
+# A dev Home Assistant against simulated FC660s -- no hardware needed.
+#
+#   docker compose up -d
+#   open http://localhost:8123, onboard, then add "Bandary FC660":
+#   Network gateway -> host "sim", port 5020, "Modbus TCP gateway", address 2
+#   (and again with address 3 and another name, for a second panel).
+#
+# The simulator serves the reference unit's probe capture at both addresses,
+# with the unit's rules: two blocks answer, nothing else does.
+# The Home Assistant release the tests pin.
+services:
+  sim:
+    image: python:3.14-slim
+    working_dir: /repo
+    command: >-
+      python3 -u tools/sim_fc660.py --capture tests/fixtures/fc660_reference.json
+      --listen 0.0.0.0:5020 --slaves 2,3
+    volumes:
+      - .:/repo:ro
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:2026.8.2
+    ports:
+      - "8123:8123"
+    environment:
+      - TZ=Europe/Kyiv
+    volumes:
+      - ./dev-config:/config
+      - ./custom_components:/config/custom_components:ro
+    depends_on:
+      - sim

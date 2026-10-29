@@ -1,0 +1,281 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "How is the FC660 connected?",
+        "description": "One entry per panel. Panels on one RS-485 bus are added one at a time, each with its own Modbus address, and share the connection.",
+        "menu_options": {
+          "network": "Network gateway (mbusd, …)",
+          "serial": "USB / RS-485 adapter"
+        }
+      },
+      "network": {
+        "title": "Network gateway",
+        "description": "A Modbus TCP gateway such as mbusd, or a transparent serial server (RTU over TCP). Use a gateway when other devices share the bus and something else polls them: RS-485 allows one master.",
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "port": "Port",
+          "transport": "Gateway type",
+          "slave": "Modbus address"
+        },
+        "data_description": {
+          "name": "The device name. Its slug starts every entity id: \"FC660\" gives climate.fc660 and sensor.fc660_humidity, \"FC660 Bedroom\" gives climate.fc660_bedroom.",
+          "slave": "Set on the panel (holding register 256); factory default 1."
+        }
+      },
+      "serial": {
+        "title": "RS-485 adapter",
+        "description": "Terminals A/B on the panel, 8N1. Prefer a /dev/serial/by-id path: it survives reboots and replugging. Nothing else may open this port.",
+        "data": {
+          "name": "Name",
+          "serial_port": "Serial port",
+          "baudrate": "Baud rate",
+          "slave": "Modbus address"
+        },
+        "data_description": {
+          "name": "The device name. Its slug starts every entity id: \"FC660\" gives climate.fc660 and sensor.fc660_humidity, \"FC660 Bedroom\" gives climate.fc660_bedroom.",
+          "slave": "Set on the panel (holding register 256); factory default 1."
+        }
+      },
+      "reconfigure": {
+        "title": "Change the connection",
+        "description": "Same panel, different link. Entity ids and history are kept.",
+        "menu_options": {
+          "reconfigure_network": "Network gateway (mbusd, …)",
+          "reconfigure_serial": "USB / RS-485 adapter"
+        }
+      },
+      "reconfigure_network": {
+        "title": "Network gateway",
+        "description": "A Modbus TCP gateway such as mbusd, or a transparent serial server (RTU over TCP). Use a gateway when other devices share the bus and something else polls them: RS-485 allows one master.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "transport": "Gateway type",
+          "slave": "Modbus address"
+        },
+        "data_description": {
+          "slave": "Set on the panel (holding register 256); factory default 1."
+        }
+      },
+      "reconfigure_serial": {
+        "title": "RS-485 adapter",
+        "description": "Terminals A/B on the panel, 8N1. Prefer a /dev/serial/by-id path: it survives reboots and replugging. Nothing else may open this port.",
+        "data": {
+          "serial_port": "Serial port",
+          "baudrate": "Baud rate",
+          "slave": "Modbus address"
+        },
+        "data_description": {
+          "slave": "Set on the panel (holding register 256); factory default 1."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No answer. Check the host and port or the serial port, the Modbus address, and the wiring on A/B.",
+      "not_an_fc660": "Something answered, but not like an FC660 at this address: {reason}.",
+      "invalid_name": "Use a name with at least one letter or digit.",
+      "name_in_use": "Another FC660 already uses the entity id prefix {prefix}. Choose another name."
+    },
+    "abort": {
+      "already_configured": "This panel is already set up.",
+      "reconfigure_successful": "The connection was changed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "FC660 options",
+        "data": {
+          "unavailable_after": "Unavailable after",
+          "sync_clock": "Keep the panel clock in sync"
+        },
+        "data_description": {
+          "unavailable_after": "How long reads may fail before the entities show as unavailable. Short stalls on a shared bus are normal.",
+          "sync_clock": "Set the panel's clock to Home Assistant's time whenever it is more than 2 minutes off (at most once an hour), daylight saving included. The panel's weekly programme runs on this clock."
+        }
+      }
+    }
+  },
+  "selector": {
+    "framing": {
+      "options": {
+        "tcp": "Modbus TCP gateway (mbusd, …)",
+        "rtu_over_tcp": "Transparent serial server (RTU over TCP)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperature"
+      },
+      "humidity": {
+        "name": "Humidity"
+      },
+      "tvoc": {
+        "name": "TVOC"
+      },
+      "co2": {
+        "name": "CO2"
+      },
+      "fault_code": {
+        "name": "Fault code"
+      },
+      "equipment_type": {
+        "name": "Equipment type",
+        "state": {
+          "single_stage_heat_pump": "Heat pump, single stage",
+          "multi_stage_heat_pump": "Heat pump, multi-stage",
+          "cooling_only": "Cooling only",
+          "heating_only": "Heating only"
+        }
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "modbus_address": {
+        "name": "Modbus address"
+      },
+      "password": {
+        "name": "Panel password"
+      },
+      "clock": {
+        "name": "Panel clock"
+      },
+      "last_successful_read": {
+        "name": "Last successful read"
+      },
+      "read_failures": {
+        "name": "Read failures"
+      }
+    },
+    "binary_sensor": {
+      "y1": {
+        "name": "Y1 (cooling stage 1)"
+      },
+      "y2": {
+        "name": "Y2 (cooling stage 2)"
+      },
+      "w1": {
+        "name": "W1 (heating stage 1)"
+      },
+      "w2": {
+        "name": "W2 (heating stage 2)"
+      },
+      "fan_running": {
+        "name": "Fan"
+      },
+      "reversing_valve": {
+        "name": "Reversing valve (O/B)"
+      },
+      "aux_heater": {
+        "name": "Auxiliary heater"
+      },
+      "wifi": {
+        "name": "Wi-Fi"
+      },
+      "fault": {
+        "name": "Fault"
+      }
+    },
+    "number": {
+      "setpoint": {
+        "name": "Setpoint"
+      },
+      "setpoint_f": {
+        "name": "Setpoint (°F)"
+      },
+      "backlight_brightness": {
+        "name": "Backlight brightness"
+      },
+      "backlight_timeout": {
+        "name": "Backlight timeout"
+      },
+      "temperature_offset": {
+        "name": "Temperature offset"
+      },
+      "temperature_offset_f": {
+        "name": "Temperature offset (°F)"
+      },
+      "humidity_offset": {
+        "name": "Humidity offset"
+      },
+      "compressor_delay": {
+        "name": "Compressor start delay"
+      },
+      "dead_band": {
+        "name": "Dead band"
+      },
+      "dead_band_f": {
+        "name": "Dead band (°F)"
+      },
+      "stage_hysteresis": {
+        "name": "Stage 2 hysteresis (Y2/W2)"
+      },
+      "stage_hysteresis_f": {
+        "name": "Stage 2 hysteresis (Y2/W2, °F)"
+      }
+    },
+    "select": {
+      "working_mode": {
+        "name": "Working mode",
+        "state": {
+          "cooling": "Cooling",
+          "heating": "Heating",
+          "ventilation": "Ventilation"
+        }
+      },
+      "display_unit": {
+        "name": "Display unit",
+        "state": {
+          "celsius": "°C",
+          "fahrenheit": "°F"
+        }
+      }
+    },
+    "switch": {
+      "power": {
+        "name": "Power"
+      },
+      "away_mode": {
+        "name": "Away mode"
+      },
+      "key_lock": {
+        "name": "Key lock"
+      }
+    },
+    "button": {
+      "sync_clock": {
+        "name": "Sync clock"
+      }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": {
+      "message": "Cannot reach the FC660 at address {slave} on {endpoint}."
+    },
+    "not_an_fc660": {
+      "message": "The unit at Modbus address {slave} does not answer like an FC660: {reason}."
+    },
+    "not_writable": {
+      "message": "{key} cannot be written."
+    },
+    "out_of_range": {
+      "message": "{value} is not a valid {key}: it takes {minimum} to {maximum} in steps of {step}."
+    },
+    "write_refused": {
+      "message": "The FC660 refused {key} = {value} ({error})."
+    },
+    "write_failed": {
+      "message": "Could not write {key}: {error}. Nothing was changed on the panel, or the next poll will show it."
+    },
+    "write_not_applied": {
+      "message": "The FC660 accepted {key} but holds {held}, not {wanted}."
+    },
+    "clock_not_applied": {
+      "message": "The panel clock reads {clock} after the sync."
+    }
+  }
+}

@@ -1,0 +1,32 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Home Assistant 2026.8 requires Python 3.14.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install -r requirements_test.txt
+      - run: ruff check custom_components tools tests
+      - run: pytest -q
+
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The probe runs on the Home Assistant host (Python 3.11 at least), not in
+      # Home Assistant, so it is tested there without Home Assistant installed.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pytest "pymodbus>=3.6,<4" "ruff>=0.6"
+      - run: ruff check tools tests/probe
+      - run: pytest -q tests/probe

@@ -1,0 +1,281 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Як підключено FC660?",
+        "description": "Один запис на панель. Панелі на одній шині RS-485 додаються по одній, кожна зі своєю адресою Modbus, і користуються одним з'єднанням.",
+        "menu_options": {
+          "network": "Мережевий шлюз (mbusd, …)",
+          "serial": "Адаптер USB / RS-485"
+        }
+      },
+      "network": {
+        "title": "Мережевий шлюз",
+        "description": "Шлюз Modbus TCP, як-от mbusd, або прозорий послідовний сервер (RTU через TCP). Використовуйте шлюз, коли шиною користуються інші пристрої і їх опитує ще хтось: RS-485 допускає лише одного майстра.",
+        "data": {
+          "name": "Назва",
+          "host": "Хост",
+          "port": "Порт",
+          "transport": "Тип шлюзу",
+          "slave": "Адреса Modbus"
+        },
+        "data_description": {
+          "name": "Назва пристрою. З неї починається кожен ідентифікатор сутності: «FC660» дає climate.fc660 і sensor.fc660_humidity, «FC660 Bedroom» — climate.fc660_bedroom.",
+          "slave": "Задається на панелі (регістр 256); заводське значення 1."
+        }
+      },
+      "serial": {
+        "title": "Адаптер RS-485",
+        "description": "Клеми A/B на панелі, 8N1. Обирайте шлях /dev/serial/by-id: він не змінюється після перезавантаження чи перепідключення. Ніщо інше не повинно відкривати цей порт.",
+        "data": {
+          "name": "Назва",
+          "serial_port": "Послідовний порт",
+          "baudrate": "Швидкість",
+          "slave": "Адреса Modbus"
+        },
+        "data_description": {
+          "name": "Назва пристрою. З неї починається кожен ідентифікатор сутності: «FC660» дає climate.fc660 і sensor.fc660_humidity, «FC660 Bedroom» — climate.fc660_bedroom.",
+          "slave": "Задається на панелі (регістр 256); заводське значення 1."
+        }
+      },
+      "reconfigure": {
+        "title": "Змінити підключення",
+        "description": "Та сама панель, інше підключення. Ідентифікатори сутностей та історія зберігаються.",
+        "menu_options": {
+          "reconfigure_network": "Мережевий шлюз (mbusd, …)",
+          "reconfigure_serial": "Адаптер USB / RS-485"
+        }
+      },
+      "reconfigure_network": {
+        "title": "Мережевий шлюз",
+        "description": "Шлюз Modbus TCP, як-от mbusd, або прозорий послідовний сервер (RTU через TCP). Використовуйте шлюз, коли шиною користуються інші пристрої і їх опитує ще хтось: RS-485 допускає лише одного майстра.",
+        "data": {
+          "host": "Хост",
+          "port": "Порт",
+          "transport": "Тип шлюзу",
+          "slave": "Адреса Modbus"
+        },
+        "data_description": {
+          "slave": "Задається на панелі (регістр 256); заводське значення 1."
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Адаптер RS-485",
+        "description": "Клеми A/B на панелі, 8N1. Обирайте шлях /dev/serial/by-id: він не змінюється після перезавантаження чи перепідключення. Ніщо інше не повинно відкривати цей порт.",
+        "data": {
+          "serial_port": "Послідовний порт",
+          "baudrate": "Швидкість",
+          "slave": "Адреса Modbus"
+        },
+        "data_description": {
+          "slave": "Задається на панелі (регістр 256); заводське значення 1."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Немає відповіді. Перевірте хост і порт або послідовний порт, адресу Modbus та підключення на A/B.",
+      "not_an_fc660": "Щось відповіло, але не як FC660 за цією адресою: {reason}.",
+      "invalid_name": "Назва має містити хоча б одну літеру або цифру.",
+      "name_in_use": "Інша FC660 вже використовує префікс {prefix}. Оберіть іншу назву."
+    },
+    "abort": {
+      "already_configured": "Цю панель уже налаштовано.",
+      "reconfigure_successful": "Підключення змінено."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметри FC660",
+        "data": {
+          "unavailable_after": "Недоступно через",
+          "sync_clock": "Синхронізувати годинник панелі"
+        },
+        "data_description": {
+          "unavailable_after": "Скільки часу читання може не вдаватися, перш ніж сутності стануть недоступними. Короткі затримки на спільній шині — це норма.",
+          "sync_clock": "Встановлювати годинник панелі за часом Home Assistant, щойно він відхиляється більш ніж на 2 хвилини (не частіше ніж раз на годину), з урахуванням літнього часу. За цим годинником працює тижнева програма панелі."
+        }
+      }
+    }
+  },
+  "selector": {
+    "framing": {
+      "options": {
+        "tcp": "Шлюз Modbus TCP (mbusd, …)",
+        "rtu_over_tcp": "Прозорий послідовний сервер (RTU через TCP)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Температура"
+      },
+      "humidity": {
+        "name": "Вологість"
+      },
+      "tvoc": {
+        "name": "TVOC"
+      },
+      "co2": {
+        "name": "CO2"
+      },
+      "fault_code": {
+        "name": "Код несправності"
+      },
+      "equipment_type": {
+        "name": "Тип обладнання",
+        "state": {
+          "single_stage_heat_pump": "Тепловий насос, один ступінь",
+          "multi_stage_heat_pump": "Тепловий насос, кілька ступенів",
+          "cooling_only": "Лише охолодження",
+          "heating_only": "Лише опалення"
+        }
+      },
+      "firmware": {
+        "name": "Прошивка"
+      },
+      "modbus_address": {
+        "name": "Адреса Modbus"
+      },
+      "password": {
+        "name": "Пароль панелі"
+      },
+      "clock": {
+        "name": "Годинник панелі"
+      },
+      "last_successful_read": {
+        "name": "Останнє успішне читання"
+      },
+      "read_failures": {
+        "name": "Помилки читання"
+      }
+    },
+    "binary_sensor": {
+      "y1": {
+        "name": "Y1 (ступінь охолодження 1)"
+      },
+      "y2": {
+        "name": "Y2 (ступінь охолодження 2)"
+      },
+      "w1": {
+        "name": "W1 (ступінь опалення 1)"
+      },
+      "w2": {
+        "name": "W2 (ступінь опалення 2)"
+      },
+      "fan_running": {
+        "name": "Вентилятор"
+      },
+      "reversing_valve": {
+        "name": "Чотириходовий клапан (O/B)"
+      },
+      "aux_heater": {
+        "name": "Додатковий нагрівач"
+      },
+      "wifi": {
+        "name": "Wi-Fi"
+      },
+      "fault": {
+        "name": "Несправність"
+      }
+    },
+    "number": {
+      "setpoint": {
+        "name": "Уставка"
+      },
+      "setpoint_f": {
+        "name": "Уставка (°F)"
+      },
+      "backlight_brightness": {
+        "name": "Яскравість підсвічування"
+      },
+      "backlight_timeout": {
+        "name": "Тривалість підсвічування"
+      },
+      "temperature_offset": {
+        "name": "Корекція температури"
+      },
+      "temperature_offset_f": {
+        "name": "Корекція температури (°F)"
+      },
+      "humidity_offset": {
+        "name": "Корекція вологості"
+      },
+      "compressor_delay": {
+        "name": "Затримка запуску компресора"
+      },
+      "dead_band": {
+        "name": "Мертва зона"
+      },
+      "dead_band_f": {
+        "name": "Мертва зона (°F)"
+      },
+      "stage_hysteresis": {
+        "name": "Гістерезис 2-го ступеня (Y2/W2)"
+      },
+      "stage_hysteresis_f": {
+        "name": "Гістерезис 2-го ступеня (Y2/W2, °F)"
+      }
+    },
+    "select": {
+      "working_mode": {
+        "name": "Режим роботи",
+        "state": {
+          "cooling": "Охолодження",
+          "heating": "Опалення",
+          "ventilation": "Вентиляція"
+        }
+      },
+      "display_unit": {
+        "name": "Одиниця на дисплеї",
+        "state": {
+          "celsius": "°C",
+          "fahrenheit": "°F"
+        }
+      }
+    },
+    "switch": {
+      "power": {
+        "name": "Живлення"
+      },
+      "away_mode": {
+        "name": "Режим «Відсутність»"
+      },
+      "key_lock": {
+        "name": "Блокування кнопок"
+      }
+    },
+    "button": {
+      "sync_clock": {
+        "name": "Синхронізувати годинник"
+      }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": {
+      "message": "Не вдається зв'язатися з FC660 за адресою {slave} через {endpoint}."
+    },
+    "not_an_fc660": {
+      "message": "Пристрій за адресою Modbus {slave} відповідає не як FC660: {reason}."
+    },
+    "not_writable": {
+      "message": "{key} не можна записати."
+    },
+    "out_of_range": {
+      "message": "{value} — недопустиме значення {key}: від {minimum} до {maximum} з кроком {step}."
+    },
+    "write_refused": {
+      "message": "FC660 відхилила {key} = {value} ({error})."
+    },
+    "write_failed": {
+      "message": "Не вдалося записати {key}: {error}. Панель не змінилася, або це покаже наступне опитування."
+    },
+    "write_not_applied": {
+      "message": "FC660 прийняла {key}, але зберігає {held}, а не {wanted}."
+    },
+    "clock_not_applied": {
+      "message": "Після синхронізації годинник панелі показує {clock}."
+    }
+  }
+}

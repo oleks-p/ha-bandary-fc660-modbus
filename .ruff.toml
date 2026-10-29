@@ -1,0 +1,30 @@
+# Lint settings for the integration, its tests and its tools.
+#
+# A deliberately narrow rule set: correctness (F, B),
+# import hygiene (I), modern syntax (UP) and the simplifications that read better
+# (SIM). Style beyond that is left to the comments, not a formatter.
+#
+# py311, not the Home Assistant runtime's version: tools/probe_fc660.py runs on
+# the Home Assistant host itself, which may have only Python 3.11, so nothing
+# here may rely on newer syntax.
+target-version = "py311"
+line-length = 100
+src = [".", "tools"]
+
+[lint]
+select = ["F", "I", "UP", "B", "SIM", "ARG"]
+
+ignore = [
+  # Home Assistant fixes the signature of almost everything an integration
+  # implements, and not every argument is needed by every implementation.
+  "ARG001",
+  "ARG002",
+  "ARG004",
+  # `if a: return False` then `return True` reads as a list of guards, one
+  # condition per line, each with room for its comment.
+  "SIM103",
+]
+
+[lint.per-file-ignores]
+# Tests name fixtures after what they build and assert on internals on purpose.
+"tests/*" = ["ARG001"]

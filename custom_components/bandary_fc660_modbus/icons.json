@@ -1,0 +1,135 @@
+{
+  "entity": {
+    "sensor": {
+      "tvoc": {
+        "default": "mdi:air-filter"
+      },
+      "fault_code": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "equipment_type": {
+        "default": "mdi:hvac"
+      },
+      "firmware": {
+        "default": "mdi:chip"
+      },
+      "modbus_address": {
+        "default": "mdi:identifier"
+      },
+      "password": {
+        "default": "mdi:form-textbox-password"
+      },
+      "clock": {
+        "default": "mdi:clock-outline"
+      },
+      "last_successful_read": {
+        "default": "mdi:clock-check-outline"
+      },
+      "read_failures": {
+        "default": "mdi:alert-outline"
+      }
+    },
+    "binary_sensor": {
+      "y1": {
+        "default": "mdi:snowflake"
+      },
+      "y2": {
+        "default": "mdi:snowflake"
+      },
+      "w1": {
+        "default": "mdi:radiator"
+      },
+      "w2": {
+        "default": "mdi:radiator"
+      },
+      "fan_running": {
+        "default": "mdi:fan",
+        "state": {
+          "off": "mdi:fan-off"
+        }
+      },
+      "reversing_valve": {
+        "default": "mdi:valve"
+      },
+      "aux_heater": {
+        "default": "mdi:heating-coil"
+      }
+    },
+    "number": {
+      "setpoint": {
+        "default": "mdi:thermostat"
+      },
+      "setpoint_f": {
+        "default": "mdi:thermostat"
+      },
+      "backlight_brightness": {
+        "default": "mdi:brightness-6"
+      },
+      "backlight_timeout": {
+        "default": "mdi:timer-outline"
+      },
+      "temperature_offset": {
+        "default": "mdi:thermometer-plus"
+      },
+      "temperature_offset_f": {
+        "default": "mdi:thermometer-plus"
+      },
+      "humidity_offset": {
+        "default": "mdi:water-percent"
+      },
+      "compressor_delay": {
+        "default": "mdi:timer-sand"
+      },
+      "dead_band": {
+        "default": "mdi:arrow-expand-vertical"
+      },
+      "dead_band_f": {
+        "default": "mdi:arrow-expand-vertical"
+      },
+      "stage_hysteresis": {
+        "default": "mdi:stairs"
+      },
+      "stage_hysteresis_f": {
+        "default": "mdi:stairs"
+      }
+    },
+    "select": {
+      "working_mode": {
+        "default": "mdi:thermostat",
+        "state": {
+          "cooling": "mdi:snowflake",
+          "heating": "mdi:fire",
+          "ventilation": "mdi:fan"
+        }
+      },
+      "display_unit": {
+        "default": "mdi:temperature-celsius",
+        "state": {
+          "fahrenheit": "mdi:temperature-fahrenheit"
+        }
+      }
+    },
+    "switch": {
+      "power": {
+        "default": "mdi:power"
+      },
+      "away_mode": {
+        "default": "mdi:home-export-outline",
+        "state": {
+          "off": "mdi:home"
+        }
+      },
+      "key_lock": {
+        "default": "mdi:lock",
+        "state": {
+          "off": "mdi:lock-open-variant"
+        }
+      }
+    },
+    "button": {
+      "sync_clock": {
+        "default": "mdi:clock-check-outline"
+      }
+    }
+  }
+}

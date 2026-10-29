@@ -1,0 +1,17 @@
+{
+  "domain": "bandary_fc660_modbus",
+  "name": "Bandary FC660 (Modbus)",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/oleks-p/ha-bandary-fc660-modbus",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/oleks-p/ha-bandary-fc660-modbus/issues",
+  "loggers": [
+    "pymodbus"
+  ],
+  "requirements": [
+    "pymodbus>=3.6,<4"
+  ],
+  "version": "0.1.0"
+}

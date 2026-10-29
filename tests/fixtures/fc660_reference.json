@@ -1,0 +1,74 @@
+{
+ "tool": "probe_fc660",
+ "register_map": "fc660-r1",
+ "captured_at": "2026-10-29T19:47:00+00:00",
+ "slave": 2,
+ "blocks": {
+  "input:0+15": [
+   257,
+   176,
+   58,
+   51,
+   407,
+   1,
+   0,
+   0,
+   1,
+   1,
+   1,
+   0,
+   0,
+   0,
+   0
+  ],
+  "holding:256+24": [
+   2,
+   0,
+   100,
+   30,
+   0,
+   0,
+   0,
+   987,
+   1,
+   1,
+   0,
+   240,
+   69,
+   0,
+   3,
+   5,
+   1,
+   10,
+   2,
+   2026,
+   10,
+   29,
+   21,
+   46
+  ]
+ },
+ "timings_ms": {
+  "input:0+15": 71,
+  "holding:256+24": 96
+ },
+ "edges": {
+  "input:15+1": {
+   "exception": 4,
+   "ms": 964
+  },
+  "input:0+16": {
+   "exception": 4,
+   "ms": 2019
+  },
+  "holding:280+1": {
+   "exception": 4,
+   "ms": 964
+  },
+  "holding:256+25": {
+   "exception": 4,
+   "ms": 2126
+  }
+ },
+ "note": "Reference unit: Bandary FC660, firmware 0x0101, slave 2, behind mbusd 0.5.3 (Modbus TCP) on a 9600 8N1 bus shared with a heat pump and a fancoil. Edges: behind mbusd, a read past either end comes back as exception 4 after the gateway's retry budget, so the unit itself most likely does not answer."
+}

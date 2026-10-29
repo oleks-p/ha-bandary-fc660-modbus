@@ -1,0 +1,282 @@
+{
+ "domain": "bandary_fc660_modbus",
+ "version": "0.1.0",
+ "default_entity_prefix": "fc660",
+ "entity_id": "<domain>.<entity_prefix>_<key>",
+ "entities": [
+  {
+   "domain": "climate",
+   "key": "thermostat",
+   "entity_id": "climate.<entity_prefix>",
+   "registers": "holding 264-268"
+  },
+  {
+   "domain": "sensor",
+   "key": "temperature",
+   "register": "input 1",
+   "unit_of_measurement": "°C",
+   "device_class": "temperature",
+   "state_class": "measurement"
+  },
+  {
+   "domain": "sensor",
+   "key": "humidity",
+   "register": "input 2",
+   "unit_of_measurement": "%",
+   "device_class": "humidity",
+   "state_class": "measurement"
+  },
+  {
+   "domain": "sensor",
+   "key": "tvoc",
+   "register": "input 3",
+   "unit_of_measurement": "ppb",
+   "device_class": "volatile_organic_compounds_parts",
+   "state_class": "measurement"
+  },
+  {
+   "domain": "sensor",
+   "key": "co2",
+   "register": "input 4",
+   "unit_of_measurement": "ppm",
+   "device_class": "carbon_dioxide",
+   "state_class": "measurement"
+  },
+  {
+   "domain": "sensor",
+   "key": "fault_code"
+  },
+  {
+   "domain": "sensor",
+   "key": "equipment_type",
+   "register": "input 5",
+   "device_class": "enum",
+   "entity_category": "diagnostic",
+   "options": [
+    "single_stage_heat_pump",
+    "multi_stage_heat_pump",
+    "cooling_only",
+    "heating_only"
+   ]
+  },
+  {
+   "domain": "sensor",
+   "key": "firmware",
+   "register": "input 0",
+   "entity_category": "diagnostic"
+  },
+  {
+   "domain": "sensor",
+   "key": "modbus_address",
+   "register": "holding 256",
+   "entity_category": "diagnostic"
+  },
+  {
+   "domain": "sensor",
+   "key": "password",
+   "register": "holding 263",
+   "entity_category": "diagnostic",
+   "enabled_by_default": false
+  },
+  {
+   "domain": "sensor",
+   "key": "clock",
+   "device_class": "timestamp",
+   "entity_category": "diagnostic"
+  },
+  {
+   "domain": "sensor",
+   "key": "last_successful_read",
+   "device_class": "timestamp",
+   "entity_category": "diagnostic"
+  },
+  {
+   "domain": "sensor",
+   "key": "read_failures",
+   "entity_category": "diagnostic"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "y1",
+   "register": "input 6",
+   "device_class": "running"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "y2",
+   "register": "input 7",
+   "device_class": "running"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "w1",
+   "register": "input 8",
+   "device_class": "running"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "w2",
+   "register": "input 9",
+   "device_class": "running"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "fan_running",
+   "register": "input 10",
+   "device_class": "running"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "reversing_valve",
+   "register": "input 11"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "aux_heater",
+   "register": "input 12",
+   "device_class": "running"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "wifi",
+   "register": "input 13",
+   "device_class": "connectivity",
+   "entity_category": "diagnostic"
+  },
+  {
+   "domain": "binary_sensor",
+   "key": "fault",
+   "device_class": "problem"
+  },
+  {
+   "domain": "number",
+   "key": "setpoint",
+   "register": "holding 267",
+   "unit_of_measurement": "°C",
+   "device_class": "temperature"
+  },
+  {
+   "domain": "number",
+   "key": "setpoint_f",
+   "register": "holding 268",
+   "unit_of_measurement": "°F",
+   "enabled_by_default": false
+  },
+  {
+   "domain": "number",
+   "key": "backlight_brightness",
+   "register": "holding 258",
+   "unit_of_measurement": "%",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "backlight_timeout",
+   "register": "holding 259",
+   "unit_of_measurement": "s",
+   "device_class": "duration",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "temperature_offset",
+   "register": "holding 260",
+   "unit_of_measurement": "°C",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "temperature_offset_f",
+   "register": "holding 261",
+   "unit_of_measurement": "°F",
+   "entity_category": "config",
+   "enabled_by_default": false
+  },
+  {
+   "domain": "number",
+   "key": "humidity_offset",
+   "register": "holding 262",
+   "unit_of_measurement": "%",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "compressor_delay",
+   "register": "holding 270",
+   "unit_of_measurement": "min",
+   "device_class": "duration",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "dead_band",
+   "register": "holding 271",
+   "unit_of_measurement": "°C",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "dead_band_f",
+   "register": "holding 272",
+   "unit_of_measurement": "°F",
+   "entity_category": "config",
+   "enabled_by_default": false
+  },
+  {
+   "domain": "number",
+   "key": "stage_hysteresis",
+   "register": "holding 273",
+   "unit_of_measurement": "°C",
+   "entity_category": "config"
+  },
+  {
+   "domain": "number",
+   "key": "stage_hysteresis_f",
+   "register": "holding 274",
+   "unit_of_measurement": "°F",
+   "entity_category": "config",
+   "enabled_by_default": false
+  },
+  {
+   "domain": "select",
+   "key": "working_mode",
+   "register": "holding 265",
+   "options": [
+    "cooling",
+    "heating",
+    "ventilation"
+   ]
+  },
+  {
+   "domain": "select",
+   "key": "display_unit",
+   "register": "holding 257",
+   "entity_category": "config",
+   "options": [
+    "celsius",
+    "fahrenheit"
+   ]
+  },
+  {
+   "domain": "switch",
+   "key": "power",
+   "register": "holding 264"
+  },
+  {
+   "domain": "switch",
+   "key": "away_mode",
+   "register": "holding 266"
+  },
+  {
+   "domain": "switch",
+   "key": "key_lock",
+   "register": "holding 269",
+   "entity_category": "config"
+  },
+  {
+   "domain": "button",
+   "key": "sync_clock",
+   "entity_category": "config"
+  }
+ ]
+}
