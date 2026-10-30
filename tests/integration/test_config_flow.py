@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from unittest.mock import patch
 
 from homeassistant.config_entries import SOURCE_USER, ConfigEntryState
@@ -10,10 +11,14 @@ from homeassistant.helpers import entity_registry as er
 
 from custom_components.bandary_fc660_modbus import bus_registry
 from custom_components.bandary_fc660_modbus.const import (
+    CONF_CONTROL_INTERVAL,
+    CONF_SETTINGS_INTERVAL,
+    CONF_STATE_INTERVAL,
     CONF_SYNC_CLOCK,
     CONF_UNAVAILABLE_AFTER,
     DOMAIN,
 )
+from custom_components.bandary_fc660_modbus.registers import Tier
 from custom_components.bandary_fc660_modbus.transport import Endpoint
 from tests.sim import FakeFc660
 
@@ -135,8 +140,23 @@ async def test_reconfigure_moves_the_panel_to_a_serial_port(hass, setup_integrat
 async def test_options(hass, setup_integration):
     result = await hass.config_entries.options.async_init(setup_integration.entry_id)
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {CONF_UNAVAILABLE_AFTER: 300, CONF_SYNC_CLOCK: True})
+        result["flow_id"], {CONF_CONTROL_INTERVAL: 2, CONF_UNAVAILABLE_AFTER: 300,
+                            CONF_SYNC_CLOCK: True})
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert setup_integration.options == {CONF_UNAVAILABLE_AFTER: 300, CONF_SYNC_CLOCK: True}
+    assert setup_integration.options == {
+        CONF_CONTROL_INTERVAL: 2, CONF_STATE_INTERVAL: 15, CONF_SETTINGS_INTERVAL: 30,
+        CONF_UNAVAILABLE_AFTER: 300, CONF_SYNC_CLOCK: True}
     await hass.async_block_till_done()
-    assert setup_integration.runtime_data.coordinator.sync_clock is True
+    coordinator = setup_integration.runtime_data.coordinator
+    assert coordinator.sync_clock is True
+    assert coordinator.intervals == {Tier.CONTROL: 2, Tier.STATE: 15, Tier.SETTINGS: 30}
+    assert coordinator.update_interval == timedelta(seconds=2)
+
+
+async def test_options_form_shows_the_current_intervals(hass, setup_integration):
+    hass.config_entries.async_update_entry(setup_integration, options={CONF_STATE_INTERVAL: 60})
+    result = await hass.config_entries.options.async_init(setup_integration.entry_id)
+    defaults = {str(key): key.default() for key in result["data_schema"].schema}
+    assert defaults[CONF_CONTROL_INTERVAL] == 5
+    assert defaults[CONF_STATE_INTERVAL] == 60
+    assert defaults[CONF_SETTINGS_INTERVAL] == 30

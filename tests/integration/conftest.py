@@ -172,15 +172,15 @@ async def setup_integration(hass, kyiv, config_entry, modbus_clients):
 
 @pytest.fixture
 def advance(hass, freezer):
-    """Move time forward in 5 s steps, letting each poll complete."""
+    """Move time forward in ``step`` s steps, letting each poll complete."""
 
-    async def run(seconds: float) -> None:
+    async def run(seconds: float, step: float = 5) -> None:
         remaining = seconds
         while remaining > 0:
-            step = min(5, remaining)
-            freezer.tick(timedelta(seconds=step))
+            tick = min(step, remaining)
+            freezer.tick(timedelta(seconds=tick))
             async_fire_time_changed(hass, dt_util.utcnow())
             await hass.async_block_till_done()
-            remaining -= step
+            remaining -= tick
 
     return run

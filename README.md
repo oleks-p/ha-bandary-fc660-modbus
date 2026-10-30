@@ -84,6 +84,9 @@ gateway. A serial port opened by two programs at once fails for both.
 
 Options:
 
+- **Poll intervals**: how often to read power, mode and setpoint (default 5 s),
+  the readings and outputs (15 s), and all settings (30 s). Each goes down to
+  2 s; see [Polling](#polling).
 - **Unavailable after** (default 120 s): how long reads may fail before the
   entities show as unavailable. Short stalls on a shared bus are normal.
 - **Keep the panel clock in sync** (default off): sets the panel's clock to
@@ -106,13 +109,23 @@ their ids are taken, and the integration's entities would get `_2` ids instead.
 
 ## Polling
 
-| Block | Request | Every |
-|---|---|---|
-| Input registers 0-14 (readings, outputs, fault) | one FC4 | 15 s |
-| Holding registers 256-279 (settings, clock) | one FC3 | 30 s |
+| Read | Request | Default | Option |
+|---|---|---|---|
+| Holding registers 264-268 (power, working mode, comfort/away, setpoint) | one FC3 | 5 s | *Read power, mode and setpoint every* |
+| Input registers 0-14 (readings, outputs, fault) | one FC4 | 15 s | *Read readings and outputs every* |
+| Holding registers 256-279 (every setting, the clock) | one FC3 | 30 s | *Read all settings every* |
 
-That is three requests per 30 s per panel. The map is exactly these two blocks,
-and the unit answers nothing outside them; see
+Each interval can be set from 2 s up. The integration polls at the shortest of
+the three and makes each read on the cycle nearest its own interval, so the
+other two round to a multiple of it: with power, mode and setpoint at 2 s, a
+15 s interval becomes 14 s. When the settings read is due it brings power, mode
+and setpoint with it, and the short read is skipped. After a change from Home
+Assistant the settings are read back at once, whatever the intervals.
+
+With the defaults that is eight requests per 30 s per panel. The short read
+took about 40 ms on the reference unit's quiet bus, and up to 0.9 s when queued
+behind the other devices' requests in mbusd. The map is exactly the two whole
+blocks, and the unit answers nothing outside them; see
 [docs/register_map.md](docs/register_map.md).
 
 ## Tools

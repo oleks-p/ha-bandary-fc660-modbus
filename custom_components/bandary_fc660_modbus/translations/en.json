@@ -87,11 +87,18 @@
     "step": {
       "init": {
         "title": "FC660 options",
+        "description": "The panel is polled at the shortest of the three read intervals, and each read is made on the cycle nearest its own, so the other two round to a multiple of it. After a change from Home Assistant the settings are read back at once.",
         "data": {
+          "control_interval": "Read power, mode and setpoint every",
+          "state_interval": "Read readings and outputs every",
+          "settings_interval": "Read all settings every",
           "unavailable_after": "Unavailable after",
           "sync_clock": "Keep the panel clock in sync"
         },
         "data_description": {
+          "control_interval": "Power, working mode, comfort/away and the setpoint (registers 264-268): what people change on the panel. One short read; 2 s is fine on a shared bus.",
+          "state_interval": "Temperature, humidity, TVOC, CO2, the outputs (Y1, Y2, W1, W2, fan, …) and the fault code (registers 0-14).",
+          "settings_interval": "Every setting and the panel clock (registers 256-279). Power, mode and setpoint come with it, so this read replaces that one when both are due.",
           "unavailable_after": "How long reads may fail before the entities show as unavailable. Short stalls on a shared bus are normal.",
           "sync_clock": "Set the panel's clock to Home Assistant's time whenever it is more than 2 minutes off (at most once an hour), daylight saving included. The panel's weekly programme runs on this clock."
         }

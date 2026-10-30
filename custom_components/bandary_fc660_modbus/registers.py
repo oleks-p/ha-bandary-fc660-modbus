@@ -1,4 +1,4 @@
-"""The FC660 register map: addresses, encodings, ranges and how often to read them.
+"""The FC660 register map: addresses, encodings, ranges and the reads that cover it.
 
 Protocol only, and free of Home Assistant imports: tools/probe_fc660.py uses
 it on a host without Home Assistant. What an entity shows -- unit, device
@@ -12,6 +12,9 @@ wire addresses (0-based), and the unit confirmed every one of them:
 
 * input registers 0-14 read whole in one FC4 request, and holding registers
   256-279 in one FC3 request;
+* a read of part of a block answers too: holding 264-268 alone came back in
+  40 ms on a quiet bus, and in up to 0.9 s behind the other masters' requests
+  in mbusd (2026-10-30);
 * one register past either end, or FC3 on the input range and FC4 on the
   holding range, is refused: behind mbusd it comes back as exception 4 after
   the gateway's whole retry budget (1-3 s), so the unit most likely does not
@@ -23,7 +26,7 @@ wire addresses (0-based), and the unit confirmed every one of them:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum, StrEnum
+from enum import StrEnum
 
 REGISTER_MAP_VERSION = "fc660-r1"
 
@@ -42,17 +45,15 @@ class Kind(StrEnum):
     I16 = "i16"
 
 
-class Tier(Enum):
-    """Poll cadence in seconds."""
+class Tier(StrEnum):
+    """What a block holds. How often each tier is read is an option of the entry."""
 
+    #: Power, working mode, scene and setpoint: what people change on the panel.
+    CONTROL = "control"
     #: Readings and outputs: they change on their own.
-    STATE = 15
-    #: Settings: they change when somebody touches the panel.
-    SETTINGS = 30
-
-    @property
-    def seconds(self) -> int:
-        return self.value
+    STATE = "state"
+    #: Every setting and the clock.
+    SETTINGS = "settings"
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +86,11 @@ class Block:
     def key(self) -> str:
         return f"{self.table}:{self.address}+{self.count}"
 
+    def covers(self, other: Block) -> bool:
+        """True if every register of ``other`` is in this block (itself included)."""
+        return (self.table is other.table and self.address <= other.address
+                and other.end <= self.end)
+
     def __str__(self) -> str:
         return f"{self.table} {self.address}..{self.end}"
 
@@ -93,6 +99,11 @@ class Block:
 INPUT_BLOCK = Block(Table.INPUT, 0, 15, Tier.STATE)
 HOLDING_BLOCK = Block(Table.HOLDING, 256, 24, Tier.SETTINGS)
 BLOCKS: tuple[Block, ...] = (INPUT_BLOCK, HOLDING_BLOCK)
+#: Power, working mode, scene and both setpoints (264-268): a slice of the
+#: settings block, read on its own between whole reads of it.
+CONTROL_BLOCK = Block(Table.HOLDING, 264, 5, Tier.CONTROL)
+#: Every read the coordinator polls, in the order it makes them.
+POLLED: tuple[Block, ...] = (CONTROL_BLOCK, INPUT_BLOCK, HOLDING_BLOCK)
 
 _IN = {"table": Table.INPUT}
 _HOLD = {"table": Table.HOLDING}
@@ -159,6 +170,10 @@ assert all(
     for r in REGISTERS
 ), "every register is inside a block"
 assert sum(b.count for b in BLOCKS) == len(REGISTERS), "the blocks hold nothing else"
+assert all(any(b.covers(p) for b in BLOCKS) for p in POLLED), "a polled read is inside the map"
+assert [r.key for r in REGISTERS if r.table is CONTROL_BLOCK.table
+        and CONTROL_BLOCK.address <= r.address <= CONTROL_BLOCK.end] == [
+    "power", "working_mode", "away_mode", "setpoint", "setpoint_f"], "what the control read holds"
 
 
 def decode(reg: Reg, raw: int) -> float | int | None:

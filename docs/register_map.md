@@ -77,6 +77,10 @@ Daikin fancoil.
   likely does not answer such a read at all; mbusd reports the silence as 4.
 - In-map reads took 70-100 ms when the bus was quiet, and up to about 1.9 s
   when queued behind the other masters' requests in mbusd.
+- A read of part of a block is answered too. Holding 264-268 alone (power,
+  working mode, scene, both setpoints) came back in about 40 ms on a quiet bus,
+  and in up to 0.9 s when queued (2026-10-30). The integration polls that slice
+  on its own, between whole reads of the holding block.
 - Writes are FC6 only. FC16 gets no reply. That was measured on the same unit
   by the `modbus:` YAML setup this integration replaces, which wrote 264-267
   and 269 with FC6.

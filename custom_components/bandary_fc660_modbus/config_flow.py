@@ -39,6 +39,7 @@ from .const import (
     DOMAIN,
     MAX_UNAVAILABLE_AFTER,
     MIN_UNAVAILABLE_AFTER,
+    POLL_INTERVALS,
     TRANSPORT_RTU_OVER_TCP,
     TRANSPORT_SERIAL,
     TRANSPORT_TCP,
@@ -236,17 +237,26 @@ class Fc660ConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class Fc660OptionsFlow(OptionsFlowWithReload):
-    """Link tolerance, and whether to keep the panel's clock in step."""
+    """Poll intervals, link tolerance, and whether to keep the panel's clock in step."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None
                               ) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(data={
+                **{key: int(user_input[key]) for key in POLL_INTERVALS},
                 CONF_UNAVAILABLE_AFTER: int(user_input[CONF_UNAVAILABLE_AFTER]),
                 CONF_SYNC_CLOCK: bool(user_input.get(CONF_SYNC_CLOCK, False)),
             })
         options = self.config_entry.options
+        intervals = {
+            vol.Required(key, default=options.get(key, default)):
+                selector.NumberSelector(selector.NumberSelectorConfig(
+                    min=minimum, max=maximum, step=1, unit_of_measurement="s",
+                    mode=selector.NumberSelectorMode.BOX))
+            for key, (default, minimum, maximum) in POLL_INTERVALS.items()
+        }
         schema = vol.Schema({
+            **intervals,
             vol.Required(CONF_UNAVAILABLE_AFTER,
                          default=options.get(CONF_UNAVAILABLE_AFTER, DEFAULT_UNAVAILABLE_AFTER)):
                 selector.NumberSelector(selector.NumberSelectorConfig(

@@ -147,6 +147,32 @@ T: dict[str, tuple[str, str]] = {
     "a_already": ("This panel is already set up.", "Цю панель уже налаштовано."),
     "a_reconf": ("The connection was changed.", "Підключення змінено."),
     "opt_title": ("FC660 options", "Параметри FC660"),
+    "opt_desc": (
+        "The panel is polled at the shortest of the three read intervals, and each read is "
+        "made on the cycle nearest its own, so the other two round to a multiple of it. "
+        "After a change from Home Assistant the settings are read back at once.",
+        "Панель опитується з найкоротшим із трьох інтервалів читання, і кожне читання "
+        "робиться в найближчому до свого інтервалу циклі, тож два інші округлюються до "
+        "кратного йому. Після зміни з Home Assistant налаштування зчитуються одразу."),
+    "control_interval": ("Read power, mode and setpoint every",
+                         "Читати живлення, режим і уставку кожні"),
+    "control_interval_desc": (
+        "Power, working mode, comfort/away and the setpoint (registers 264-268): what people "
+        "change on the panel. One short read; 2 s is fine on a shared bus.",
+        "Живлення, режим роботи, комфорт/відсутність і уставка (регістри 264-268): те, що "
+        "змінюють на панелі. Одне коротке читання; 2 с — нормально і для спільної шини."),
+    "state_interval": ("Read readings and outputs every", "Читати показники й виходи кожні"),
+    "state_interval_desc": (
+        "Temperature, humidity, TVOC, CO2, the outputs (Y1, Y2, W1, W2, fan, …) and the fault "
+        "code (registers 0-14).",
+        "Температура, вологість, TVOC, CO2, виходи (Y1, Y2, W1, W2, вентилятор, …) і код "
+        "несправності (регістри 0-14)."),
+    "settings_interval": ("Read all settings every", "Читати всі налаштування кожні"),
+    "settings_interval_desc": (
+        "Every setting and the panel clock (registers 256-279). Power, mode and setpoint come "
+        "with it, so this read replaces that one when both are due.",
+        "Усі налаштування й годинник панелі (регістри 256-279). Живлення, режим і уставка "
+        "входять у нього, тож коли обидва читання припадають на один цикл, робиться лише це."),
     "unavailable_after": ("Unavailable after", "Недоступно через"),
     "unavailable_after_desc": (
         "How long reads may fail before the entities show as unavailable. Short stalls on a "
@@ -181,6 +207,11 @@ T: dict[str, tuple[str, str]] = {
     "x_clock": ("The panel clock reads {clock} after the sync.",
                 "Після синхронізації годинник панелі показує {clock}."),
 }
+
+
+#: The options form's fields, in the order the flow shows them.
+OPTIONS = ("control_interval", "state_interval", "settings_interval", "unavailable_after",
+           "sync_clock")
 
 
 def entities(lang: str) -> dict:
@@ -228,9 +259,9 @@ def doc(lang: str) -> dict:
         },
         "options": {"step": {"init": {
             "title": t["opt_title"],
-            "data": {"unavailable_after": t["unavailable_after"], "sync_clock": t["sync_clock"]},
-            "data_description": {"unavailable_after": t["unavailable_after_desc"],
-                                 "sync_clock": t["sync_clock_desc"]}}}},
+            "description": t["opt_desc"],
+            "data": {key: t[key] for key in OPTIONS},
+            "data_description": {key: t[f"{key}_desc"] for key in OPTIONS}}}},
         "selector": {"framing": {"options": {"tcp": t["tcp"], "rtu_over_tcp": t["rtu_over_tcp"]}}},
         "entity": entities(lang),
         "exceptions": {

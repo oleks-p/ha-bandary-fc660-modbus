@@ -1,4 +1,9 @@
-"""Polling coordinator: reads the two blocks on their tiers, decodes them, writes.
+"""Polling coordinator: makes each read on its own interval, decodes, writes.
+
+Three reads, each on an interval from the entry's options: power, mode and
+setpoint (holding 264-268, every 5 s by default), the readings and outputs
+(input 0-14, 15 s) and every setting with the clock (holding 256-279, 30 s).
+The first is a slice of the last, so it is skipped when both are due.
 
 Writes are FC6, one register at a time (the unit answers nothing else), and
 every write is followed by one read of the settings block: the value shown is
@@ -11,7 +16,7 @@ import asyncio
 import logging
 import time
 from collections import deque
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
@@ -24,10 +29,14 @@ from homeassistant.util import dt as dt_util
 from .const import (
     CLOCK_MAX_DRIFT,
     CLOCK_SYNC_INTERVAL,
+    CONF_CONTROL_INTERVAL,
+    CONF_SETTINGS_INTERVAL,
+    CONF_STATE_INTERVAL,
     CONF_SYNC_CLOCK,
     CONF_UNAVAILABLE_AFTER,
     DEFAULT_UNAVAILABLE_AFTER,
     DOMAIN,
+    POLL_INTERVALS,
 )
 from .model import ModelInfo
 from .registers import (
@@ -35,6 +44,7 @@ from .registers import (
     BY_KEY,
     CLOCK_KEYS,
     HOLDING_BLOCK,
+    POLLED,
     REGISTERS,
     WRITE_SPECS,
     Block,
@@ -53,9 +63,12 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-#: A tier is due this much before its full interval has passed, so a 30 s tier
-#: polled from a 15 s loop does not slip to 45 s on scheduling jitter.
-TIER_SLACK = 2.0
+#: Which option sets each tier's interval.
+INTERVAL_OPTIONS: dict[Tier, str] = {
+    Tier.CONTROL: CONF_CONTROL_INTERVAL,
+    Tier.STATE: CONF_STATE_INTERVAL,
+    Tier.SETTINGS: CONF_SETTINGS_INTERVAL,
+}
 #: The clock sync starts no later than this second of the minute: its six writes
 #: must land inside the minute they write.
 CLOCK_LATEST_SECOND = 45
@@ -64,6 +77,12 @@ CLOCK_LATEST_SECOND = 45
 async def _wait(seconds: float) -> None:
     """The clock sync's only wait, in one place (tests move the clock instead)."""
     await asyncio.sleep(seconds)
+
+
+def poll_intervals(options: Mapping[str, Any]) -> dict[Tier, int]:
+    """Seconds between reads, per tier, from an entry's options."""
+    return {tier: int(options.get(key, POLL_INTERVALS[key][0]))
+            for tier, key in INTERVAL_OPTIONS.items()}
 
 
 def _registers_in(block: Block) -> tuple[Reg, ...]:
@@ -97,7 +116,7 @@ class Fc660Data:
 
 
 class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
-    """Reads one FC660 on its poll tiers and writes its settings."""
+    """Reads one FC660 on its poll intervals and writes its settings."""
 
     def __init__(
         self,
@@ -107,12 +126,15 @@ class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
         slave: int,
         model: ModelInfo,
     ) -> None:
+        self.intervals = poll_intervals(entry.options)
+        # The loop runs at the shortest interval; each read is made on the cycle
+        # nearest its own (see _async_update_data).
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
             name=f"{DOMAIN} {slave}",
-            update_interval=timedelta(seconds=Tier.STATE.seconds),
+            update_interval=timedelta(seconds=min(self.intervals.values())),
         )
         self.bus = bus
         self.slave = slave
@@ -140,11 +162,18 @@ class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
 
     async def _async_update_data(self) -> Fc660Data:
         now = time.monotonic()
+        # Due on the cycle nearest the interval: 30 s from a 5 s loop is the
+        # sixth cycle, 15 s from a 2 s loop the seventh (14 s). Home Assistant
+        # starts a cycle no earlier than the interval after the last one ended.
+        slack = self.update_interval.total_seconds() / 2
         due = [
-            block for block in BLOCKS
+            block for block in POLLED
             if now - self._last_read.get(block.tier, float("-inf"))
-            >= block.tier.seconds - TIER_SLACK
+            >= self.intervals[block.tier] - slack
         ]
+        # A read inside another due read comes with it.
+        due = [block for block in due
+               if not any(other is not block and other.covers(block) for other in due)]
         try:
             for block in due:
                 await self._fetch(block)
@@ -163,8 +192,7 @@ class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
             data.stale = True
             return data
 
-        for block in due:
-            self._last_read[block.tier] = now
+        self._mark_read(due, now)
         self.last_success = now
         self.last_success_at = dt_util.utcnow()
         self.consecutive_failures = 0
@@ -175,17 +203,30 @@ class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
 
     async def _fetch(self, block: Block) -> None:
         words = await self.bus.read(self.slave, block.address, block.count, block.table)
-        self._cache[block.key] = words
+        if block in BLOCKS:
+            self._cache[block.key] = words
+        else:
+            # A slice of a whole block: patch it into that block's words. The
+            # whole block was read by the first refresh, or setup failed.
+            whole = next(b for b in BLOCKS if b.covers(block))
+            start = block.address - whole.address
+            self._cache[whole.key][start:start + block.count] = words
         if block is HOLDING_BLOCK:
             self._settings_read_at = dt_util.now()
+
+    def _mark_read(self, blocks: Sequence[Block], now: float) -> None:
+        """Every polled read covered by ``blocks`` is fresh as of ``now``."""
+        for block in POLLED:
+            if any(read.covers(block) for read in blocks):
+                self._last_read[block.tier] = now
 
     # -- decoding --------------------------------------------------------
 
     def _build(self) -> Fc660Data:
         """Decode the whole cache, not just this cycle's reads.
 
-        The settings block is read every other cycle; its values must survive
-        the state polls in between.
+        Each read is made on its own interval; what the others read must
+        survive the cycles in between.
         """
         values: dict[str, Any] = {}
         for block in BLOCKS:
@@ -289,7 +330,7 @@ class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
                     words[reg.address - HOLDING_BLOCK.address] = raw
             held = None
         else:
-            self._last_read[Tier.SETTINGS] = time.monotonic()
+            self._mark_read([HOLDING_BLOCK], time.monotonic())
             words = self._cache[HOLDING_BLOCK.key]
             held = {HOLDING_BLOCK.address + i: word for i, word in enumerate(words)}
         self.async_set_updated_data(self._build())
@@ -354,4 +395,5 @@ class Fc660Coordinator(DataUpdateCoordinator[Fc660Data]):
             "requests": self.bus.requests,
             "bus_failures": self.bus.failures,
             "last_error": self.bus.last_error,
+            "poll_intervals": {str(block): self.intervals[block.tier] for block in POLLED},
         }

@@ -47,6 +47,21 @@ RESYNC_DELAY: Final = 1.0
 
 # -- options ------------------------------------------------------------------
 
+#: How often each read is made: power, mode and setpoint (holding 264-268), the
+#: readings and outputs (input 0-14), and every setting with the clock (holding
+#: 256-279). The coordinator polls at the shortest and makes each read on the
+#: cycle nearest its interval.
+CONF_CONTROL_INTERVAL: Final = "control_interval"
+CONF_STATE_INTERVAL: Final = "state_interval"
+CONF_SETTINGS_INTERVAL: Final = "settings_interval"
+#: option -> (default, minimum, maximum), in seconds. Behind a gateway on a busy
+#: shared bus one read can take nearly 2 s, so nothing is read faster than that.
+POLL_INTERVALS: Final = {
+    CONF_CONTROL_INTERVAL: (5, 2, 60),
+    CONF_STATE_INTERVAL: (15, 2, 300),
+    CONF_SETTINGS_INTERVAL: (30, 2, 600),
+}
+
 #: How long the link may fail before entities go unavailable. A shared RS-485
 #: bus stalls now and then; that must not flap entities.
 CONF_UNAVAILABLE_AFTER: Final = "unavailable_after"

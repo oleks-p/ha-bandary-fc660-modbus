@@ -15,5 +15,7 @@ async def test_diagnostics(hass, setup_integration):
     assert diag["raw_registers"]["input:0+15"][1] == 176
     assert diag["values"]["setpoint"] == 24.0
     assert diag["values"]["clock"] == "2026-10-29T21:46:00+02:00"
+    assert diag["link"]["poll_intervals"] == {
+        "holding 264..268": 5, "input 0..14": 15, "holding 256..279": 30}
     assert diag["model"] == {"firmware": "0x0101", "equipment_type": "multi_stage_heat_pump",
                              "register_map": "fc660-r1"}
